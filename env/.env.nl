@@ -1,0 +1,5 @@
+BASE_URL="https://www.amazon.nl"
+CITY="MONNICKENDAM"
+STATE="MONNICKENDAM"
+COUNTRY="Netherlands"
+POSTAL_CODE="1141"

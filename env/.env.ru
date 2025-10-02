@@ -1,0 +1,5 @@
+BASE_URL="https://www.amazon.com"
+CITY="OHIO"
+STATE="OHIO"
+COUNTRY="Russian"
+POSTAL_CODE="45363"

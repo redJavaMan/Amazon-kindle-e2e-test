@@ -14,10 +14,10 @@ import * as path from 'path';
 // Determine which environment to use
 // Load environment file based on ENV variable
 const environment = process.env.ENV || 'us';
-dotenv.config({ path: path.resolve(__dirname, `.env.${environment}`) });
+dotenv.config({ path: path.resolve(__dirname, `env/.env.${environment}`) });
 
 export default defineConfig({
-  timeout: 180000,
+  timeout: 280000,
   testDir: './tests',
   /* Run tests in files in parallel */
   fullyParallel: true,

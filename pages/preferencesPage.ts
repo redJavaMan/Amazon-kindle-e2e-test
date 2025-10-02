@@ -16,6 +16,16 @@ export class PreferencesPage {
   private readonly expiry: Locator;
   private readonly name: Locator;
   private readonly state: Locator;
+  private readonly changeLink: Locator;
+  private readonly nameOnCard2: Locator;
+  private readonly cardNo2: Locator;
+  private readonly expiryYear: Locator;
+  private readonly year: Locator;
+  private readonly addCardButton: Locator;
+  private readonly useThisAddressButton: Locator;
+  private readonly continueButton: Locator;
+  private readonly cardConfirmation: Locator;
+  private readonly iframe;
   constructor(public readonly page: Page) {
     this.changeCountry = this.page.locator('(//div[@class="myx-row"])[3]//child::div[3]/i');
     this.changeButton = this.page.locator('//button[@aria-label="Change"]');
@@ -27,11 +37,21 @@ export class PreferencesPage {
     this.phnoField = this.page.locator('input#adr_PhoneNumber');
     this.updateButton = this.page.locator('//span[text()=" Update "]');
     this.yourPayment = this.page.getByRole('link', { name: 'Your Payments' });
-    this.addACard = this.page.getByRole('link', { name: 'Add a credit or debit card' });
+    this.iframe = this.page.locator('//iframe[contains(@class,"apx-inline-secure-iframe pmts-portal-component")]').contentFrame();
+    this.addACard = this.page.locator('//span[contains(@data-action,"add-credit-card")]//child::a');
     this.nameOnCard = this.page.locator('iframe[name="ApxSecureIframe-pp-AldJoC-46"]').contentFrame().getByRole('textbox', { name: 'Name on card' });
     this.cardNo = this.page.locator('iframe[name="ApxSecureIframe-pp-AldJoC-46"]').contentFrame().getByRole('textbox', { name: 'Card number' });
     this.name = this.page.locator('input#adr_FullName')
     this.state = this.page.locator('input#adr_StateOrRegion');
+    this.changeLink = this.page.locator('//input[contains(@name,"PaymentMethod")]');
+    this.nameOnCard2 = this.iframe.locator('//input[contains(@name,"accountHolderName")]');
+    this.cardNo2 = this.iframe.locator('//input[contains(@name,"CardNumber")]');
+    this.expiryYear = this.iframe.locator('//a[text()="2029"]');
+    this.year = this.iframe.locator('//span[contains(@class,"expiry-year")]');
+    this.addCardButton = this.iframe.locator('//input[contains(@name,"AddCreditCardEvent")]');
+    this.useThisAddressButton = this.iframe.locator('//input[contains(@name,"SelectAddressEvent")]');
+    this.continueButton = this.page.locator('//input[contains(@name,"PaymentOptionSelectionEvent")]');
+    this.cardConfirmation = this.page.locator('//span[contains(text(),"1111")]');
   }
 async setAddress(name: string, address1: string, city: string, state: string, postalCode: string, phoneNumber: string) {
     await this.changeCountry.click();
@@ -46,8 +66,17 @@ async setAddress(name: string, address1: string, city: string, state: string, po
 }
 async addCard() {
     await this.yourPayment.click();
+    await this.changeLink.click();
+    await expect(this.addACard).toBeEnabled({timeout:60000});
     await this.addACard.click();
-    await this.nameOnCard.fill('Mohammed Lukmanudhin');
-    await this.cardNo.fill('4444333322221111');
+    await this.nameOnCard2.fill('Mohammed Lukmanudhin');
+    await this.cardNo2.fill('4444333322221111');
+    await this.year.click();
+    await this.expiryYear.click();
+    await this.addCardButton.click();
+    await this.useThisAddressButton.click();
+    await this.continueButton.click();
+    await this.page.waitForLoadState('networkidle');
+    await expect(this.cardConfirmation).toBeVisible();
   }
 }

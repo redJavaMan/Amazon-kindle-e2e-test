@@ -12,9 +12,11 @@ test('Create Account', async ({ page }) => {
   let preferencesPage=new PreferencesPage(page);
   // Account details:
   const name = "Mohammed Lukmanudhin";
-  const email = "mdlukman+ukppppppppppppppppppppo@amazon.com";
+  const email = "mdlukman+ooo9@amazon.com";
   const password = "kindleda";
   await homePage.goto();
+  await homePage.dismissPopupIfPresent();
+  await homePage.changeLanguageToEnglishIfNot();
   await homePage.goToSignIn();
   await loginPage.proceedToCreateAccount();
   await loginPage.createAccount(name, email, password,);

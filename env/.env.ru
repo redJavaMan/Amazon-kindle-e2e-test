@@ -1,3 +1,4 @@
+ENV="RU"
 BASE_URL="https://www.amazon.com"
 CITY="OHIO"
 STATE="OHIO"

@@ -1,3 +1,4 @@
+ENV="NL"
 BASE_URL="https://www.amazon.nl"
 CITY="MONNICKENDAM"
 STATE="MONNICKENDAM"

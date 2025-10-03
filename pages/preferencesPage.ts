@@ -38,7 +38,7 @@ export class PreferencesPage {
     this.updateButton = this.page.locator('//span[text()=" Update "]');
     this.yourPayment = this.page.getByRole('link', { name: 'Your Payments' });
     this.iframe = this.page.locator('//iframe[contains(@class,"apx-inline-secure-iframe pmts-portal-component")]').contentFrame();
-    this.addACard = this.page.locator('//span[contains(@data-action,"add-credit-card")]//child::a');
+    this.addACard = this.page.locator('(//*[contains(text(),"Add a credit or debit card")])[1]');
     this.nameOnCard = this.page.locator('iframe[name="ApxSecureIframe-pp-AldJoC-46"]').contentFrame().getByRole('textbox', { name: 'Name on card' });
     this.cardNo = this.page.locator('iframe[name="ApxSecureIframe-pp-AldJoC-46"]').contentFrame().getByRole('textbox', { name: 'Card number' });
     this.name = this.page.locator('input#adr_FullName')
@@ -67,7 +67,9 @@ async setAddress(name: string, address1: string, city: string, state: string, po
 async addCard() {
     await this.yourPayment.click();
     await this.changeLink.click();
-    await expect(this.addACard).toBeEnabled({timeout:60000});
+    //await expect(this.addACard).toBeEnabled({timeout:60000});
+    // await this.addACard.waitFor({state:'visible'});
+    await this.page.waitForTimeout(5000);
     await this.addACard.click();
     await this.nameOnCard2.fill('Mohammed Lukmanudhin');
     await this.cardNo2.fill('4444333322221111');

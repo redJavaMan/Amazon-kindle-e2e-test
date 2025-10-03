@@ -10,5 +10,5 @@ export class ENV {
   public static STATE = process.env.STATE;
   public static COUNTRY = process.env.COUNTRY;
   public static POSTAL_CODE = process.env.POSTAL_CODE;
-  public static NODE_ENV = process.env.NODE_ENV?.toUpperCase() || "US";
+  public static LOCAL = process.env.ENV?.toLowerCase() || "us";
 }

@@ -63,6 +63,7 @@ export class LoginPage {
     // await this.verifyOtp.click();
   }
   async proceedToCreateAccount(){
+    await this.page.waitForTimeout(3000);
     await this.proceedAccount.click();
   }
 }

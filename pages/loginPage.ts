@@ -43,6 +43,14 @@ export class LoginPage {
     await this.reEnterPassword.fill(password);
     await this.verifyButton.click();
     }
+  }
+  
+  async proceedToCreateAccount(){
+    await this.page.waitForTimeout(3000);
+    await this.proceedAccount.click();
+  }
+
+  async verifyOTP(){
     await expect
       .poll(
         async () => {
@@ -59,11 +67,5 @@ export class LoginPage {
 
     console.log('OTP detected, clicking verify button...');
     await this.verifyOtp.click();
-    // await this.securityCode.fill(otp);
-    // await this.verifyOtp.click();
-  }
-  async proceedToCreateAccount(){
-    await this.page.waitForTimeout(3000);
-    await this.proceedAccount.click();
   }
 }

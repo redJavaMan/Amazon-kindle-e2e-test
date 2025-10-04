@@ -1,28 +1,16 @@
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../pages/loginPage';
-import { ContentLibraryPage } from '../pages/contentLibraryPage';
-import { HomePage } from '../pages/homePage';
-import { PreferencesPage } from '../pages/preferencesPage';
+import { test } from "../fixtures/baseFixture";
 import { ENV } from '../utils/env';
 import { UserGenerator } from '../utils/userInformations';
 import {ai} from '@zerostep/playwright'
 
-let loginPage:LoginPage;
-let homePage:HomePage;
-let contentLibraryPage:ContentLibraryPage;
-let preferencesPage:PreferencesPage;
+
 const { name, email, password, phone, card } = UserGenerator.generateUser();
 
-test.beforeEach(async ({ page }) => {
-  loginPage=new LoginPage(page);
-  homePage=new HomePage(page);
-  contentLibraryPage=new ContentLibraryPage(page);
-  preferencesPage=new PreferencesPage(page);
+test.beforeEach(async ({ homePage }) => {
   await homePage.goto();
 });
 
-test('Create Account', async ({ page }) => {
-  const aiArgs = { page, test}
+test('Create Account', async ({ homePage, loginPage, contentLibraryPage, preferencesPage }) => {
   await homePage.dismissPopupIfPresent();
   await homePage.changeLanguageToEnglishIfNot();
   await homePage.goToSignIn();
@@ -48,7 +36,7 @@ test('Create Account', async ({ page }) => {
   `);
 });
 
-test('Create Account with Zero Step AI', async ({ page }) => {
+test('Create Account with Zero Step AI', async ({ page, homePage, loginPage, preferencesPage }) => {
   const aiArgs = { page, test};
   // Handle any initial popups
   await page.waitForTimeout(3000);
@@ -115,7 +103,7 @@ test('Create Account with Zero Step AI', async ({ page }) => {
   `);
 });
 
-test('Sign In with Zero Step AI', async ({ page }) => {
+test('Sign In with Zero Step AI', async ({ page, homePage }) => {
   const aiArgs = { page, test};
   // Handle any initial popups
   await page.waitForTimeout(3000);
@@ -131,7 +119,7 @@ test('Sign In with Zero Step AI', async ({ page }) => {
   await ai(`Enter "xyzabc+us@gmail.com" in the email field and click Continue`, aiArgs);
   await ai(`Enter "xxxxx" in the password field and click Verify`, aiArgs);
   
-   await ai('Hover over Account & Lists and click Content Library', aiArgs);
+  await ai('Hover over Account & Lists and click Content Library', aiArgs);
   
   // Go to Preferences
   await ai('Click on the Preferences tab', aiArgs);

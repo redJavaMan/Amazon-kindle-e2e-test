@@ -1,6 +1,6 @@
-# Amazon Zero Step Automation
+# Amazon ZeroStep Automation
 
-A comprehensive Playwright-based test automation framework for Amazon Kindle with multi-environment support and AI-powered testing capabilities using ZeroStep.
+A comprehensive Playwright-based test automation framework for Amazon with multi-environment support and AI-powered testing capabilities using ZeroStep.
 
 ## 📋 Table of Contents
 
@@ -20,37 +20,45 @@ A comprehensive Playwright-based test automation framework for Amazon Kindle wit
 ## ✨ Features
 
 - **Multi-Environment Support**: Test across 16+ Amazon marketplaces (US, UK, AU, IN, DE, FR, JP, CN, IT, NL, ES, MX, BR, CA, RU)
-- **Page Object Model**: Clean, maintainable test architecture
+- **Page Object Model**: Clean, maintainable test architecture with fixtures
 - **AI-Powered Testing**: Integration with ZeroStep Playwright for natural language test automation
 - **Comprehensive Test Coverage**: Account creation, address setup, payment card management
 - **Cross-Browser Testing**: Support for Chromium, Firefox, and WebKit
 - **Parallel Execution**: Run tests in parallel for faster feedback
 - **Detailed Reporting**: HTML reports with screenshots and videos on failure
-- **Dynamic User Generation**: Automatic test user data generation per environment
+- **Dynamic User Generation**: Automatic test user data generation per environment with timestamp-based unique emails
+- **Automated Language Detection**: Automatically changes language to English for non-English marketplaces
 
 ## 📁 Project Structure
 
 ```
-amazon-kindle/
+amazon-zerostep-automation/
 ├── env/                          # Environment configuration files
 │   ├── .env.us                   # US marketplace config
 │   ├── .env.uk                   # UK marketplace config
 │   ├── .env.au                   # Australia marketplace config
 │   ├── .env.in                   # India marketplace config
-│   └── ...                       # Other marketplace configs
+│   └── ...                       # Other marketplace configs (16 total)
+├── fixtures/                     # Test fixtures
+│   └── baseFixture.ts           # Base fixture with page objects
 ├── pages/                        # Page Object Models
-│   ├── homePage.ts              # Home page actions
-│   ├── loginPage.ts             # Login/signup page actions
-│   ├── contentLibraryPage.ts    # Content library actions
-│   └── preferencesPage.ts       # Preferences page actions
+│   ├── homePage.ts              # Home page actions (navigation, popups, language)
+│   ├── loginPage.ts             # Login/signup page actions with OTP polling
+│   ├── contentLibraryPage.ts    # Content library navigation
+│   └── preferencesPage.ts       # Preferences (address, payments)
 ├── tests/                        # Test specifications
-│   └── createAccount.spec.ts    # Account creation tests
+│   └── createAccount.spec.ts    # Account creation and sign-in tests
+├── tests-examples/               # Example tests
+│   └── demo-todo-app.spec.ts    # Demo test example
 ├── utils/                        # Utility functions
 │   ├── env.ts                   # Environment variable handler
 │   └── userInformations.ts      # Test user data generator
+├── .gitignore                    # Git ignore configuration
 ├── playwright.config.ts          # Playwright configuration
 ├── package.json                  # Project dependencies
-└── zerostep.config.json         # ZeroStep configuration
+├── package-lock.json             # Dependency lock file
+├── zerostep.config.json         # ZeroStep configuration
+└── README.md                     # This file
 ```
 
 ## 🔧 Prerequisites
@@ -90,10 +98,10 @@ ZeroStep enables AI-powered test automation using natural language commands. Fol
 
 ### Step 1: Install ZeroStep
 
-ZeroStep is already included in `package.json`, but if you need to install it separately:
+ZeroStep is already included in `package.json` dependencies:
 
-```bash
-npm i @zerostep/playwright -D
+```json
+"@zerostep/playwright": "^0.1.5"
 ```
 
 ### Step 2: Get Your ZeroStep API Token
@@ -106,15 +114,7 @@ npm i @zerostep/playwright -D
 
 ### Step 3: Configure ZeroStep
 
-Update the `zerostep.config.json` file with your token:
-
-```json
-{
-  "TOKEN": "0step:your-api-token-here"
-}
-```
-
-**⚠️ Security Note**: Never commit your actual API token to version control. Consider using environment variables:
+The `zerostep.config.json` file is configured to use an environment variable:
 
 ```json
 {
@@ -122,10 +122,24 @@ Update the `zerostep.config.json` file with your token:
 }
 ```
 
-Then set the environment variable:
+Set the environment variable:
+
+**Linux/Mac:**
 ```bash
 export ZEROSTEP_TOKEN="0step:your-api-token-here"
 ```
+
+**Windows (Command Prompt):**
+```cmd
+set ZEROSTEP_TOKEN=0step:your-api-token-here
+```
+
+**Windows (PowerShell):**
+```powershell
+$env:ZEROSTEP_TOKEN="0step:your-api-token-here"
+```
+
+**⚠️ Security Note**: Never commit your actual API token to version control.
 
 ### Step 4: Import and Use ZeroStep in Tests
 
@@ -138,9 +152,9 @@ test('example test', async ({ page }) => {
   const aiArgs = { page, test };
   
   // Use natural language commands
-  await ai('Click on the Sign In button', aiArgs);
+  await ai('Hover over Account & Lists and click Sign in', aiArgs);
   await ai('Enter "user@example.com" in the email field', aiArgs);
-  await ai('Click the Submit button', aiArgs);
+  await ai('Click the Continue button', aiArgs);
 });
 ```
 
@@ -159,16 +173,53 @@ COUNTRY="United States"
 POSTAL_CODE="99546"
 ```
 
+**Available Environments:**
+- `us` - United States (amazon.com)
+- `uk` - United Kingdom (amazon.co.uk)
+- `au` - Australia (amazon.au)
+- `in` - India (amazon.in)
+- `de` - Germany (amazon.de)
+- `frfr` - France (amazon.fr)
+- `frca` - French Canada (amazon.ca)
+- `jp` - Japan (amazon.co.jp)
+- `cn` - China (amazon.cn)
+- `it` - Italy (amazon.it)
+- `nl` - Netherlands (amazon.nl)
+- `esmx` - Mexico (amazon.com.mx)
+- `ptbr` - Brazil (amazon.com.br)
+- `ru` - Russia (amazon.com with Russian locale)
+- `esar` - Argentina Spanish (amazon.es)
+- `eses` - Spain (amazon.es)
+
 ### Playwright Configuration
 
 Key settings in `playwright.config.ts`:
 
-- **Timeout**: 280 seconds (configurable for long-running operations)
-- **Parallel Execution**: Enabled by default
+- **Timeout**: 280 seconds (4.6 minutes) for long-running operations
+- **Parallel Execution**: Enabled by default (`fullyParallel: true`)
 - **Retries**: 2 retries on CI, 0 locally
-- **Screenshots**: Captured on failure
-- **Videos**: Recorded on failure
+- **Screenshots**: Captured on failure only
+- **Videos**: Recorded on failure only
 - **Slow Motion**: 200ms delay between actions for better visibility
+- **Headless Mode**: Disabled by default (`headless: false`)
+- **Base URL**: Loaded from environment configuration
+
+### User Information Generator
+
+The `UserGenerator` class in `utils/userInformations.ts` generates unique test data:
+
+```typescript
+{
+  name: "Mohammed Lukmanudhin",
+  email: "xyzabbc+{country}{timestamp}@gmail.com",
+  password: "abc123",
+  phone: "9876543210",
+  card: {
+    number: "1234 5678 9012 3456",
+    expiry: "01/2029"
+  }
+}
+```
 
 ## 🚀 Running Tests
 
@@ -189,7 +240,7 @@ npm run test:de
 ### Headed Mode (See Browser)
 
 ```bash
-# Run tests in headed mode
+# Run tests in headed mode (browser visible)
 npm run test:headed:us
 npm run test:headed:uk
 npm run test:headed:in
@@ -212,6 +263,12 @@ cross-env ENV=us npx playwright test tests/createAccount.spec.ts
 
 # Run specific test by name
 cross-env ENV=us npx playwright test -g "Create Account"
+
+# Run with ZeroStep AI
+cross-env ENV=us npx playwright test -g "Create Account with Zero Step AI"
+
+# Run sign-in test
+cross-env ENV=us npx playwright test -g "Sign In with Zero Step AI"
 ```
 
 ### View Test Report
@@ -246,28 +303,19 @@ npm run report
 
 ### Headed Mode Scripts
 
-```bash
-npm run test:headed:us      # US marketplace
-npm run test:headed:uk      # UK marketplace
-npm run test:headed:in      # India marketplace
-# ... (similar pattern for all environments)
-```
+All environments support headed mode with the pattern: `npm run test:headed:{env}`
 
 ### Debug Mode Scripts
 
-```bash
-npm run test:debug:us       # US marketplace
-npm run test:debug:uk       # UK marketplace
-npm run test:debug:in       # India marketplace
-# ... (similar pattern for all environments)
-```
+All environments support debug mode with the pattern: `npm run test:debug:{env}`
 
 ### Code Generation Scripts
 
+Generate test code using Playwright's codegen tool:
+
 ```bash
-npm run codegen:us          # Generate test code for US marketplace
-npm run codegen:uk          # Generate test code for UK marketplace
-npm run codegen:in          # Generate test code for India marketplace
+npm run codegen:us       # Generate code for US marketplace
+npm run codegen:uk       # Generate code for UK marketplace
 # ... (similar pattern for all environments)
 ```
 
@@ -285,6 +333,7 @@ Each marketplace has its own `.env` file with the following variables:
 | `STATE` | Default state/region | `"ALASKA"` |
 | `COUNTRY` | Country name | `"United States"` |
 | `POSTAL_CODE` | Default postal code | `"99546"` |
+| `ZEROSTEP_TOKEN` | ZeroStep API token (set separately) | `"0step:xxxxx"` |
 
 ### Adding a New Environment
 
@@ -309,7 +358,8 @@ Each marketplace has its own `.env` file with the following variables:
      "scripts": {
        "test:newmarket": "cross-env ENV=newmarket playwright test",
        "test:headed:newmarket": "cross-env ENV=newmarket playwright test --headed",
-       "test:debug:newmarket": "cross-env ENV=newmarket playwright test --debug"
+       "test:debug:newmarket": "cross-env ENV=newmarket playwright test --debug",
+       "codegen:newmarket": "cross-env ENV=newmarket playwright codegen"
      }
    }
    ```
@@ -318,98 +368,225 @@ Each marketplace has its own `.env` file with the following variables:
 
 ### 1. Create Account (Traditional Playwright)
 
-Creates a new Amazon account with complete profile setup:
-- Sign in navigation
-- Account creation with email and password
-- OTP verification (manual entry)
-- Address configuration
-- Payment card addition
+**Test Name:** `Create Account`
 
+Creates a new Amazon account with complete profile setup using traditional Playwright selectors:
+
+**Flow:**
+1. Navigate to Amazon marketplace
+2. Dismiss any popups (cookie consent, location, promotions)
+3. Change language to English (if not US/UK/Brazil/Mexico/Russia)
+4. Navigate to Sign In page
+5. Proceed to create account
+6. Fill in account details (name, email, password)
+7. Verify OTP (waits for manual entry with polling mechanism)
+8. Navigate to Content Library
+9. Access Preferences
+10. Set address with location-specific data
+11. Add payment card
+
+**Usage:**
 ```bash
 npm run test:us -- -g "Create Account"
 ```
 
+**Features:**
+- Automated popup dismissal
+- Language detection and switching
+- OTP polling mechanism (waits up to 3 minutes)
+- Dynamic user data generation with unique email per run
+- Complete address and payment setup
+
 ### 2. Create Account with ZeroStep AI
 
-Same as above but uses natural language commands for element interaction:
+**Test Name:** `Create Account with Zero Step AI`
 
+Same functionality as above but uses natural language commands via ZeroStep AI for element interaction:
+
+**AI Commands Used:**
+- `'Hover over Account & Lists and click Sign in'`
+- `'Enter the email in the {email} field and click Continue'`
+- `'Click "Proceed to create an account"'`
+- `'Enter the name "{name}" in the name field'`
+- And more...
+
+**Usage:**
 ```bash
 npm run test:us -- -g "Create Account with Zero Step AI"
 ```
 
+**Benefits:**
+- More resilient to UI changes
+- Natural language commands are easier to read and maintain
+- Automatically handles element location
+
 ### 3. Sign In with ZeroStep AI
 
-Tests existing account sign-in flow using AI:
+**Test Name:** `Sign In with Zero Step AI`
 
+Tests existing account sign-in flow using ZeroStep AI and performs address and payment setup:
+
+**Flow:**
+1. Navigate to sign-in page
+2. Sign in with existing credentials (hardcoded in test)
+3. Navigate to Content Library → Preferences
+4. Update address information
+5. Add payment card
+
+**Usage:**
 ```bash
 npm run test:us -- -g "Sign In with Zero Step AI"
 ```
 
+**Note:** Update the email and password in the test file for your test account.
+
+### Test Output
+
+All tests log account details after successful creation:
+
+```
+Account created successfully
+Account Details:
+  Email: xyzabbc+us1234567890@gmail.com
+  Password: abc123
+  Address: ALASKA, ALASKA, United States, 99546,
+  Phone: 9876543210,
+  Card: 1234 5678 9012 3456, Expiry: 01/2029
+```
+
 ## 📦 Page Object Model
+
+### Base Fixture (`fixtures/baseFixture.ts`)
+
+Extends Playwright's base test with custom fixtures for all page objects:
+
+```typescript
+type baseFixtures = {
+  loginPage: LoginPage;
+  homePage: HomePage;
+  contentLibraryPage: ContentLibraryPage;
+  preferencesPage: PreferencesPage;
+};
+```
 
 ### HomePage (`pages/homePage.ts`)
 
 Handles main navigation and initial page interactions:
-- Navigate to marketplace
-- Handle popups and cookie banners
-- Change language settings
-- Navigate to sign-in
-- Navigate to content library
+
+**Methods:**
+- `goto()` - Navigate to marketplace and handle initial popups
+- `goToSignIn()` - Navigate to sign-in page with retry logic
+- `goToMenu(menuName)` - Navigate to account menu items
+- `goToContentLibrary()` - Navigate to content library
+- `dismissPopupIfPresent()` - Dismiss various popups (cookies, location, promotions)
+- `changeLanguageToEnglishIfNot()` - Auto-detect and change language to English
+
+**Features:**
+- Polling mechanism for dynamic elements
+- Multi-popup handling
+- Language detection (excludes US, UK, Brazil, Mexico, Russia)
 
 ### LoginPage (`pages/loginPage.ts`)
 
 Manages authentication flow:
-- Account creation
-- OTP verification with polling
-- Sign-in functionality
+
+**Methods:**
+- `createAccount(name, email, password)` - Handle account creation flow
+- `proceedToCreateAccount()` - Navigate to account creation form
+- `verifyOTP()` - Wait for manual OTP entry with polling (up to 3 minutes)
+
+**Features:**
+- Intelligent OTP polling mechanism
+- Handles both direct signup and email-first flows
+- Configurable timeout (180 seconds default)
 
 ### ContentLibraryPage (`pages/contentLibraryPage.ts`)
 
 Manages content library navigation:
-- Navigate between tabs
-- Access preferences
+
+**Methods:**
+- `goToTab(tabName)` - Navigate between library tabs
+- `goToPreferences()` - Navigate to preferences page
 
 ### PreferencesPage (`pages/preferencesPage.ts`)
 
 Handles account preferences:
-- Set/update address
-- Add payment cards
-- Manage country/region settings
+
+**Methods:**
+- `setAddress(name, address1, city, state, postalCode, phoneNumber)` - Set/update address
+- `addCard()` - Add payment card (with iframe handling)
+
+**Features:**
+- Iframe handling for secure payment input
+- Pre-configured test card details
+- Address validation
 
 ## 🛠️ Troubleshooting
 
 ### Common Issues
 
 **1. Tests fail with timeout errors**
+
 ```bash
 # Increase timeout in playwright.config.ts
-timeout: 480000  // 8 minutes
+timeout: 480000  // 8 minutes instead of 280 seconds
 ```
 
 **2. ZeroStep commands not working**
-- Verify your API token is correct in `zerostep.config.json`
-- Check your ZeroStep account has available credits
+
+- Verify your API token is set: `echo $ZEROSTEP_TOKEN`
+- Check your ZeroStep account has available credits at https://app.zerostep.com
 - Ensure you have internet connectivity
+- Check ZeroStep service status
 
 **3. OTP verification timeout**
+
+The OTP polling mechanism waits up to 3 minutes. To extend:
+
 ```typescript
-// Increase OTP wait time in loginPage.ts
+// In loginPage.ts, modify the timeout
 timeout: 300000  // 5 minutes
 ```
 
 **4. Element not found errors**
+
 - Check if the marketplace UI has changed
 - Update selectors in respective Page Object files
 - Use Playwright Inspector: `npm run test:debug:us`
+- Try using ZeroStep AI tests which are more resilient
 
-**5. Environment not loading**
+**5. Environment not loading correctly**
+
 ```bash
 # Verify env file exists
 ls env/.env.us
 
-# Check environment variable
+# Check environment variable is set
 echo $ENV
+
+# Verify content
+cat env/.env.us
 ```
+
+**6. Language not changing automatically**
+
+The framework automatically changes language to English for most marketplaces. If issues occur:
+- Check the exclusion list in `homePage.ts` (`changeLanguageToEnglishIfNot()`)
+- Add your marketplace to the exclusion list if it's already in English
+- Verify language dropdown is visible
+
+**7. Popup handling issues**
+
+Multiple popups are handled automatically. If new popups appear:
+- Add new selectors to `homePage.ts` in `dismissPopupIfPresent()`
+- Increase wait time before dismissal: `await this.page.waitForTimeout(3000)`
+
+**8. Payment card iframe issues**
+
+If payment card addition fails:
+- Check iframe selector in `preferencesPage.ts`
+- Verify iframe loading: `await page.waitForTimeout(5000)`
+- Try using ZeroStep AI for payment flow
 
 ### Debug Tips
 
@@ -436,6 +613,32 @@ echo $ENV
    }
    ```
 
+5. **Check network requests**
+   ```typescript
+   page.on('request', request => console.log('>>', request.method(), request.url()));
+   page.on('response', response => console.log('<<', response.status(), response.url()));
+   ```
+
+6. **Use headed mode**
+   ```bash
+   npm run test:headed:us
+   ```
+   This helps visualize what's happening in the browser.
+
+7. **Check element visibility**
+   ```typescript
+   console.log('Element visible:', await element.isVisible());
+   console.log('Element enabled:', await element.isEnabled());
+   ```
+
+### Known Limitations
+
+1. **OTP Verification**: Requires manual entry as SMS cannot be automated
+2. **Payment Processing**: Uses test card numbers only
+3. **Geographic Restrictions**: Some marketplaces may require VPN
+4. **Rate Limiting**: Amazon may rate-limit account creation attempts
+5. **CAPTCHA**: May require manual intervention if triggered
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -444,9 +647,23 @@ echo $ENV
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## Author
-Mohammed Lukmanudin M - [GitHub Profile](https://github.com/redJavaMan)
+## 📝 License
+
+This project is licensed under the ISC License.
+
+## 👤 Author
+
+**Mohammed Lukmanudin M**
+- GitHub: [@redJavaMan](https://github.com/redJavaMan)
+
+## 🙏 Acknowledgments
+
+- [Playwright](https://playwright.dev/) - Browser automation framework
+- [ZeroStep](https://zerostep.com/) - AI-powered test automation
+- [Amazon](https://amazon.com/) - Test target platform
 
 ---
 
 **Happy Testing! 🚀**
+
+**Need Help?** Open an issue on GitHub or check the [Playwright Documentation](https://playwright.dev/docs/intro)
